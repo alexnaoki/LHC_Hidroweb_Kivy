@@ -1,0 +1,65 @@
+#: import threading threading
+WindowManager:
+    MainScreen:
+        id: main
+
+<MainScreen>:
+    name: 'main'
+    FloatLayout:
+        MapView:
+            id: map
+            lat: -10
+            lon: -50
+            zoom: 5
+            size_hint: 1, 1
+
+        Button:
+            text: 'Selecionar Inventario'
+            size_hint: 0.2, 0.05
+            pos_hint: {'x':0, 'y':0}
+            on_release: root.open_popup()
+
+        Button:
+            text: 'Mostrar Inventario'
+            size_hint: 0.2, 0.05
+            pos_hint: {'x': 0, 'y':0.05}
+            # on_release: root.show_inventario_cluster()
+            on_release: target=root.show_inventario_cluster()
+
+        Button:
+            text: 'Selecionar Shapefile'
+            size_hint: 0.2, 0.05
+            pos_hint: {'x':0.2, 'y':0}
+            on_release: root.open_popup_shp()
+        Button:
+            text: 'Mostrar Shapefile'
+            size_hint: 0.2, 0.05
+            pos_hint: {'x':0.2, 'y':0.05}
+            on_release: root.check_within_shp()
+            # on_release: threading.Thread(target=root.check_within_shp).start()
+
+        Button:
+            text: 'Download'
+            size_hint: 0.2, 0.05
+            pos_hint: {'x':0.4, 'y':0}
+            on_release: root.download_ANA_station()
+
+<CustomPopup>:
+    size_hint: 0.5, 0.5
+    title: "Selecione o arquivo 'Inventario.csv'"
+    FileChooserListView:
+        id: filechooser
+        size_hint: 1,1
+        filters: ['*.csv']
+        on_submit:
+            root.select_inventario(filechooser.selection)
+
+<ShapefilePopup>:
+    size_hint: 0.5, 0.5
+    title: "Selecione o arquivo Shapefile '*.shp'"
+    FileChooserListView:
+        id: shapefile_chooser
+        size_hint: 1,1
+        filters: ['*.shp']
+        on_submit:
+            root.select_shapefile(shapefile_chooser.selection)
