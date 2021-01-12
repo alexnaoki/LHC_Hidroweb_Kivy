@@ -7,6 +7,7 @@ from kivy.lang import Builder
 from kivy.uix.screenmanager import ScreenManager, Screen
 from kivy.uix.filechooser import FileChooserListView
 from kivy.uix.button import Button
+from kivy.base import ExceptionHandler, ExceptionManager
 
 from mapview import MapMarker, MapView
 from mapview.clustered_marker_layer import ClusteredMarkerLayer
@@ -36,6 +37,8 @@ class MainScreen(Screen):
         print(self.popup.inventario_path)
         # self.df_inventario = pd.read_csv(self.popup.inventario_path)
         # for i, row in self.df_inventario.iterrows():
+        self.ids['progressbar'].value = 25
+
         with open(self.popup.inventario_path, encoding='utf8') as csvfile:
             data = csv.DictReader(csvfile)
             for row in data:
@@ -43,7 +46,9 @@ class MainScreen(Screen):
         print('Added to layer')
         self.ids['map'].add_widget(self.layer)
         self.layer.reposition()
+
         print('Added Layer')
+        self.ids['progressbar'].value = 50
 
     def open_popup_shp(self):
         self.popup_shp = ShapefilePopup()
@@ -53,10 +58,6 @@ class MainScreen(Screen):
         shp_path = self.popup_shp.shapefile_path
         shp = shapefile.Reader(shp_path)
         print(shp)
-        # geojson = self.draw_geojson(shp=shp)
-        # print(geojson)
-        # self.ids['map'].add_layer(GeoJsonMapLayer(geojson=geojson))
-        # self.ids['map'].add_layer(GeoJsonMapLayer(source=r'https://storage.googleapis.com/maps-devrel/google.json'))
         self.codes = []
         all_shapes = shp.shapes()
         all_records = shp.records()
@@ -64,7 +65,6 @@ class MainScreen(Screen):
         print(all_records)
 
         for i in range(len(all_shapes)):
-            start = time.time()
             boundary = all_shapes[i]
             boundary = shape(boundary)
             print(boundary)
@@ -79,21 +79,7 @@ class MainScreen(Screen):
                         self.codes.append(int(row['Codigo']))
                     else:
                         pass
-            print(time.time() - start)
         print(self.codes)
-
-        # self.download_ANA_station(list_codes=self.codes)
-
-    def draw_geojson(self, shp):
-        fields = shp.fields[1:]
-        field_names = [field[0] for field in fields]
-        buffer = []
-        for sr in shp.shapeRecords():
-            atr = dict(zip(field_names, sr.record))
-            geom = sr.shape.__geo_interface__
-            buffer.append(dict(type="Feature", geometry=geom, properties=atr))
-        geojson = dumps({"type":"FeatureCollection", "features": buffer}, indent=2)
-        return geojson
 
     def download_ANA_station(self):
         typeData=2
@@ -106,17 +92,21 @@ class MainScreen(Screen):
             self.req = UrlRequest(
                             url_req.url,
                             on_success=self._download_sucess,
+                            # on_success=self._donwload_teste,
                             on_error=self._download_error,
                             on_failure=self._download_error
                              )
             # print(self.req)
-            self.req.wait()
+            # self.req.wait()
             print(station)
+    def _donwload_teste(self, req, result):
+        print('sucesso')
+        print(result)
 
-    def _download_sucess(self, *args):
+    def _download_sucess(self, req, result):
         try:
             # print(self.req.result)
-            tree = ET.ElementTree(ET.fromstring(self.req.result))
+            tree = ET.ElementTree(ET.fromstring(result))
             # print(tree)
             root = tree.getroot()
 
@@ -164,7 +154,7 @@ class MainScreen(Screen):
             print(list_consistenciaF)
             if len(list_data) > 0:
                 df = pd.DataFrame({'Date': list_month_dates, 'Consistence_{}_{}'.format(typeData,codigo): list_consistenciaF, 'Data{}_{}'.format(typeData, codigo): list_data})
-                print(df.to_csv(f'{codigo}.csv'))
+                print(df.to_csv(f'{codigo}_teste.csv'))
         except:
             print('ERRO')
 
