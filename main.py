@@ -189,4 +189,17 @@ class RootApp(App):
         return Builder.load_file('main.kv')
 
 
+# class E(ExceptionHandler):
+#     def handle_exception(self, inst):
+#         app = App.get_running_app()
+#         if app.scheduled_switch is not None:
+#             app.scheduled_switch.cancel()  # cancel the scheduled switch
+#             app.scheduled_switch = None
+#         if app.Exception_counter == 0:
+#             popup = MsgPopup(inst)
+#             popup.open()
+#         app.Exception_counter += 1
+#         return ExceptionManager.PASS
+#
+# ExceptionManager.add_handler(E())
 RootApp().run()
