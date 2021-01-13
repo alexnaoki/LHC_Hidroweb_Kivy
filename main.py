@@ -13,7 +13,6 @@ from mapview import MapMarker, MapView
 from mapview.clustered_marker_layer import ClusteredMarkerLayer
 from mapview.geojson import GeoJsonMapLayer
 
-import pandas as pd
 from shapely.geometry import shape,mapping, Point, Polygon, MultiPolygon
 import shapefile
 from json import dumps
@@ -153,8 +152,14 @@ class MainScreen(Screen):
             print(list_month_dates)
             print(list_consistenciaF)
             if len(list_data) > 0:
-                df = pd.DataFrame({'Date': list_month_dates, 'Consistence_{}_{}'.format(typeData,codigo): list_consistenciaF, 'Data{}_{}'.format(typeData, codigo): list_data})
-                print(df.to_csv(f'{codigo}_teste.csv'))
+                # df = pd.DataFrame({'Date': list_month_dates, 'Consistence_{}_{}'.format(typeData,codigo): list_consistenciaF, 'Data{}_{}'.format(typeData, codigo): list_data})
+                # print(df.to_csv(f'{codigo}_teste.csv'))
+                rows = zip(list_month_dates, list_consistenciaF, list_data)
+                with open(f'{codigo}_teste_sempandas.csv', 'w', newline='') as f:
+                    writer = csv.writer(f)
+                    writer.writerow(('Date', f'Consistence_{typeData}_{codigo}', f'Data_{codigo}'))
+                    for row in rows:
+                        writer.writerow(row)
         except:
             print('ERRO')
 
