@@ -6,8 +6,8 @@ WindowManager:
         id: inventario
     ShapefileScreen:
         id: shapefilescreen
-    # LoadingScreen:
-    #     id: loading
+    DownloadScreenShp:
+        id: downloadscreen_shp
 
 <MainScreen>:
     name: 'main'
@@ -18,62 +18,51 @@ WindowManager:
             lon: -50
             zoom: 5
             size_hint: 1, 0.99
-        ProgressBar:
-            id: progressbar
-            size_hint: 1, 0.01
-            pos_hint: {'x':0, 'y':0.99}
-            max: 100
+        BoxLayout:
+            Button:
+                text: 'Selecionar Inventario'
+                size_hint: 0.2, 0.05
+                pos_hint: {'x':0, 'y':0}
+                # on_release: root.open_popup()
+                on_release:
+                    root.change_toInventario()
+                    root.manager.transition.direction = 'right'
 
-        Button:
-            text: 'Selecionar Inventario'
-            size_hint: 0.2, 0.05
-            pos_hint: {'x':0, 'y':0}
-            # on_release: root.open_popup()
-            on_release:
-                root.change_toInventario()
-                root.manager.transition.direction = 'right'
-
-        Button:
-            text: 'Mostrar Inventario'
-            size_hint: 0.2, 0.05
-            pos_hint: {'x': 0, 'y':0.05}
-            on_release:
+        # Button:
+        #     text: 'Mostrar Inventario'
+        #     size_hint: 0.2, 0.05
+        #     pos_hint: {'x': 0, 'y':0.05}
+        #     on_release:
                 # root.show_inventario_cluster()
-                root.executefunc()
+                # root.executefunc()
                 # root.manager.transition.direction = "left"
             # on_release: threading.Thread(target=root.show_inventario_cluster, daemon=True).start()
 
-        Button:
-            text: 'Selecionar Shapefile'
-            size_hint: 0.2, 0.05
-            pos_hint: {'x':0.2, 'y':0}
-            # on_release: root.open_popup_shp()
-            on_release:
-                root.change_toShape()
-                root.manager.transition.direction = 'left'
-        Button:
-            text: 'Mostrar Shapefile'
-            size_hint: 0.2, 0.05
-            pos_hint: {'x':0.2, 'y':0.05}
-            on_release: root.check_within_shp()
+            Button:
+                text: 'Selecionar Shapefile'
+                size_hint: 0.2, 0.05
+                pos_hint: {'x':0.2, 'y':0}
+                # on_release: root.open_popup_shp()
+                on_release:
+                    root.change_toShape()
+                    root.manager.transition.direction = 'left'
+        # Button:
+        #     text: 'Mostrar Shapefile'
+        #     size_hint: 0.2, 0.05
+        #     pos_hint: {'x':0.2, 'y':0.05}
+        #     on_release: root.check_within_shp()
             # on_release: threading.Thread(target=root.check_within_shp).start()
 
-        Button:
-            text: 'Download'
-            size_hint: 0.2, 0.05
-            pos_hint: {'x':0.4, 'y':0}
-            on_release: root.download_ANA_station()
+            Button:
+                text: 'Download'
+                size_hint: 0.2, 0.05
+                pos_hint: {'x':0.4, 'y':0}
+                # on_release: root.download_ANA_station()
+                on_release:
+                    root.change_toDownload_shp()
+                    root.manager.transition.direction = 'up'
+                # root.show_codes()
 
-# <LoadingScreen>:
-#     name: 'loading'
-#     BoxLayout:
-#         Label:
-#             text: 'LOADING...'
-#         Button:
-#             text: 'Voltar'
-#             on_release:
-#                 app.root.current = 'main'
-#                 root.manager.transition.direction = "right"
 
 <InventarioScreen>:
     name: 'inventario'
@@ -84,6 +73,9 @@ WindowManager:
             filters: ['*.csv']
             on_submit:
                 inventarioPath.text = filechooserscreen.selection[0]
+        Label:
+            id: inventarioPath
+            text: 'Nada selecionado'
         Button:
             text: 'Selecionar'
             on_release:
@@ -94,9 +86,7 @@ WindowManager:
             on_release:
                 app.root.current='main'
                 root.manager.transition.direction = "left"
-        Label:
-            id: inventarioPath
-            text: 'Nada selecionado'
+
 
 <ShapefileScreen>:
     name: 'shapefilescreen'
@@ -106,6 +96,9 @@ WindowManager:
             id: filechoosershape
             filters: ['*.shp']
             on_submit: shapePath.text = filechoosershape.selection[0]
+        Label:
+            id: shapePath
+            text: 'Nada selecionado'
         Button:
             text: 'Selecionar'
             on_release:
@@ -116,9 +109,32 @@ WindowManager:
             on_release:
                 app.root.current = 'main'
                 root.manager.transition.direction = 'right'
+
+
+<DownloadScreenShp>:
+    name: 'downloadscreen_shp'
+    GridLayout:
+        rows: 4
+        FileChooserListView:
+            id: filechooser_downloadshp
+            dirselect: True
+            filters: [root.selected]
         Label:
-            id: shapePath
+            id: downloadShpPath
             text: 'Nada selecionado'
+        Button:
+            id: downloadbtn
+            on_release:
+                root.download_ANA_station()
+                # root.teste()
+        Button:
+            text: 'Voltar'
+            on_release:
+                app.root.current = 'main'
+                root.manager.transition.direction = 'down'
+
+
+
 
 # <CustomPopup>:
 #     size_hint: 0.5, 0.5
