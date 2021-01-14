@@ -8,6 +8,7 @@ from kivy.uix.screenmanager import ScreenManager, Screen
 from kivy.uix.filechooser import FileChooserListView
 from kivy.uix.button import Button
 from kivy.base import ExceptionHandler, ExceptionManager
+from kivy.clock import mainthread
 
 from mapview import MapMarker, MapView
 from mapview.clustered_marker_layer import ClusteredMarkerLayer
@@ -27,12 +28,20 @@ import time
 class MainScreen(Screen):
     layer = ClusteredMarkerLayer(cluster_node_size=4,cluster_radius=200)
     popup = ObjectProperty()
+    mapa = ObjectProperty()
+
+    def change_toInventario(self):
+        self.manager.current = 'inventario'
+
+    def change_toShape(self):
+        self.manager.current = 'shapefilescreen'
 
     def open_popup(self):
         self.popup = CustomPopup()
         self.popup.open()
 
     def show_inventario_cluster(self):
+        # self.manager.current = 'loading'
         print(self.popup.inventario_path)
         # self.df_inventario = pd.read_csv(self.popup.inventario_path)
         # for i, row in self.df_inventario.iterrows():
@@ -44,10 +53,19 @@ class MainScreen(Screen):
                 self.layer.add_marker(lat=float(row['Latitude']), lon=float(row['Longitude']))
         print('Added to layer')
         self.ids['map'].add_widget(self.layer)
+
         self.layer.reposition()
 
         print('Added Layer')
         self.ids['progressbar'].value = 50
+        # self.set_screen()
+
+
+    def executefunc(self):
+        self.manager.current = 'loading'
+        # t1 = threading.Thread(target=self.show_inventario_cluster)
+        # t1.start()
+        self.show_inventario_cluster()
 
     def open_popup_shp(self):
         self.popup_shp = ShapefilePopup()
@@ -98,6 +116,7 @@ class MainScreen(Screen):
             # print(self.req)
             # self.req.wait()
             print(station)
+
     def _donwload_teste(self, req, result):
         print('sucesso')
         print(result)
@@ -166,7 +185,9 @@ class MainScreen(Screen):
     def _download_error(self, *args):
         print('ERRO download')
 
-
+    @mainthread
+    def set_screen(self):
+        self.manager.current = 'main'
 
 class CustomPopup(Popup):
     def select_inventario(self, selection, *args):
@@ -189,22 +210,74 @@ class ShapefilePopup(Popup):
 class WindowManager(ScreenManager):
     pass
 
+class LoadingScreen(Screen):
+    pass
+
+class InventarioScreen(Screen):
+    layer = ClusteredMarkerLayer(cluster_node_size=4,cluster_radius=200)
+    inventario_path = StringProperty('')
+    def teste(self):
+        mark = MapMarker(lat=50, lon=10)
+        # self.ids['map'].add_marker(mark)
+        # print(self.ids)
+        # self.manager.screens[0].ids['map'].add_marker(mark)
+        self.manager.get_screen('main').ids['map'].add_marker(mark)
+        # print(self.manager.get_screen('main'))
+        # print(self.manager.screens[0].ids['map'])
+    def show_inventarioCluster(self, selection, *args):
+        # print(selection)
+        # self.manager.current = 'loading'
+        # print(self.popup.inventario_path)
+        # print(filechooserscreen.selection[0])
+
+        # self.ids['progressbar'].value = 25
+        self.inventario_path = selection[0]
+        with open(self.inventario_path, encoding='utf8') as csvfile:
+            data = csv.DictReader(csvfile)
+            for row in data:
+                self.layer.add_marker(lat=float(row['Latitude']), lon=float(row['Longitude']))
+        print('Added to layer')
+        # self.ids['map'].add_widget(self.layer)
+        self.manager.get_screen('main').ids['map'].add_widget(self.layer)
+        self.layer.reposition()
+        print('Added Layer')
+        self.manager.current = 'main'
+        self.manager.transition.direction = "left"
+        # self.ids['progressbar'].value = 50
+
+class ShapefileScreen(Screen):
+    def get_codes(self, selection, *args):
+        print(selection[0])
+        shp_path = selection[0]
+        shp = shapefile.Reader(shp_path)
+        print(shp)
+        self.codes = []
+        all_shapes = shp.shapes()
+        all_records = shp.records()
+        print(all_shapes)
+        print(all_records)
+        print(self.manager.get_screen('inventario').ids.filechooserscreen.selection[0])
+        for i in range(len(all_shapes)):
+            boundary = all_shapes[i]
+            boundary = shape(boundary)
+            print(boundary)
+            with open(self.manager.get_screen('inventario').ids.filechooserscreen.selection[0], encoding='utf8') as csvfile:
+                data = csv.DictReader(csvfile)
+                for row in data:
+                    if Point((float(row['Longitude']), float(row['Latitude']))).within(boundary):
+                        print('Dentro')
+                        print(float(row['Latitude']), float(row['Longitude']), int(row['Codigo']))
+                        mark = MapMarker(lat=float(row['Latitude']), lon=float(row['Longitude']))
+                        self.manager.get_screen('main').ids['map'].add_marker(mark)
+                        self.codes.append(int(row['Codigo']))
+                    else:
+                        pass
+        print(self.codes)
+        self.manager.current = 'main'
+        self.manager.transition.direction = "right"
+
 class RootApp(App):
     def build(self):
         return Builder.load_file('main.kv')
 
-
-# class E(ExceptionHandler):
-#     def handle_exception(self, inst):
-#         app = App.get_running_app()
-#         if app.scheduled_switch is not None:
-#             app.scheduled_switch.cancel()  # cancel the scheduled switch
-#             app.scheduled_switch = None
-#         if app.Exception_counter == 0:
-#             popup = MsgPopup(inst)
-#             popup.open()
-#         app.Exception_counter += 1
-#         return ExceptionManager.PASS
-#
-# ExceptionManager.add_handler(E())
 RootApp().run()
