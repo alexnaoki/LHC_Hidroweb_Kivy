@@ -30,6 +30,7 @@ class MainScreen(Screen):
     layer = ClusteredMarkerLayer(cluster_node_size=4,cluster_radius=200)
     popup = ObjectProperty()
     mapa = ObjectProperty()
+    bbox = 0
 
     def change_toInventario(self):
         self.manager.current = 'inventario'
@@ -37,8 +38,19 @@ class MainScreen(Screen):
     def change_toShape(self):
         self.manager.current = 'shapefilescreen'
 
+    def change_toBbox(self):
+        self.manager.current = 'bboxscreen'
+
     def change_toDownload_shp(self):
         self.manager.current = 'downloadscreen_shp'
+
+    def get_bbox(self):
+        bbox = self.manager.get_screen('main').ids['map'].bbox
+        # self.manager.get_screen('bboxscreen').ids.labelbbox.text = str(self.manager.get_screen('main').ids['map'].bbox)
+        self.manager.get_screen('bboxscreen').ids.labelbbox.text = f'Latitude : [{bbox[2]:.3f}   {bbox[0]:.3f}]\nLongitude: [{bbox[3]:.3f}   {bbox[1]:.3f}]'
+        print(self.manager.get_screen('main').ids['map'].bbox)
+        self.bbox = bbox
+
 
     def download_ANA_station(self):
         typeData=2
@@ -136,9 +148,6 @@ class MainScreen(Screen):
 class WindowManager(ScreenManager):
     pass
 
-class LoadingScreen(Screen):
-    pass
-
 class InventarioScreen(Screen):
     layer = ClusteredMarkerLayer(cluster_node_size=4,cluster_radius=200)
     inventario_path = StringProperty('')
@@ -198,7 +207,28 @@ class ShapefileScreen(Screen):
                         pass
         print(self.codes)
         self.manager.current = 'main'
-        self.manager.transition.direction = "right"
+        self.manager.transition.direction = "down"
+
+class BBoxScreen(Screen):
+    codes = []
+    def get_codes(self):
+        bbox = self.manager.get_screen('main').bbox
+        print(bbox)
+        inventario_path = self.manager.get_screen('inventario').ids.filechooserscreen.selection[0]
+        print(inventario_path)
+        with open(inventario_path, encoding='utf8') as csvfile:
+            data = csv.DictReader(csvfile)
+            for row in data:
+                if (float(row['Longitude'])>bbox[1]) and (float(row['Longitude'])<bbox[3]) and (float(row['Latitude'])>bbox[0]) and (float(row['Latitude'])<bbox[2]):
+                    print(row['Longitude'], row['Latitude'], row['Codigo'])
+                    mark = MapMarker(lat=float(row['Latitude']), lon=float(row['Longitude']))
+                    self.manager.get_screen('main').ids['map'].add_marker(mark)
+                    self.codes.append(int(row['Codigo']))
+                else:
+                    pass
+        print(len(self.codes))
+        self.manager.current = 'main'
+        self.manager.transition.direction = 'up'
 
 class DownloadScreenShp(Screen):
     def selected(self, directory, filename):
@@ -213,7 +243,6 @@ class DownloadScreenShp(Screen):
             os.mkdir(self.save_folder)
         else:
             print('existe')
-
 
     def download_ANA_station(self):
         folder_name = 'dados_LHC_hidroweb'

@@ -6,8 +6,12 @@ WindowManager:
         id: inventario
     ShapefileScreen:
         id: shapefilescreen
+    BBoxScreen:
+        id:bboxscreen
     DownloadScreenShp:
         id: downloadscreen_shp
+
+
 
 <MainScreen>:
     name: 'main'
@@ -17,7 +21,7 @@ WindowManager:
             lat: -10
             lon: -50
             zoom: 5
-            size_hint: 1, 0.99
+            size_hint: 1, 1
         BoxLayout:
             Button:
                 text: 'Selecionar Inventario'
@@ -28,16 +32,6 @@ WindowManager:
                     root.change_toInventario()
                     root.manager.transition.direction = 'right'
 
-        # Button:
-        #     text: 'Mostrar Inventario'
-        #     size_hint: 0.2, 0.05
-        #     pos_hint: {'x': 0, 'y':0.05}
-        #     on_release:
-                # root.show_inventario_cluster()
-                # root.executefunc()
-                # root.manager.transition.direction = "left"
-            # on_release: threading.Thread(target=root.show_inventario_cluster, daemon=True).start()
-
             Button:
                 text: 'Selecionar Shapefile'
                 size_hint: 0.2, 0.05
@@ -45,14 +39,17 @@ WindowManager:
                 # on_release: root.open_popup_shp()
                 on_release:
                     root.change_toShape()
-                    root.manager.transition.direction = 'left'
-        # Button:
-        #     text: 'Mostrar Shapefile'
-        #     size_hint: 0.2, 0.05
-        #     pos_hint: {'x':0.2, 'y':0.05}
-        #     on_release: root.check_within_shp()
-            # on_release: threading.Thread(target=root.check_within_shp).start()
+                    root.manager.transition.direction = 'up'
 
+            Button:
+                text: 'Selecionar area'
+                size_hint: 0.2, 0.05
+                pos_hint: {'x':0.2, 'y':0}
+                # on_release: root.open_popup_shp()
+                on_release:
+                    root.get_bbox()
+                    root.change_toBbox()
+                    root.manager.transition.direction = 'down'
             Button:
                 text: 'Download'
                 size_hint: 0.2, 0.05
@@ -60,7 +57,7 @@ WindowManager:
                 # on_release: root.download_ANA_station()
                 on_release:
                     root.change_toDownload_shp()
-                    root.manager.transition.direction = 'up'
+                    root.manager.transition.direction = 'left'
                 # root.show_codes()
 
 
@@ -87,7 +84,6 @@ WindowManager:
                 app.root.current='main'
                 root.manager.transition.direction = "left"
 
-
 <ShapefileScreen>:
     name: 'shapefilescreen'
     GridLayout:
@@ -108,7 +104,26 @@ WindowManager:
             text: 'Voltar'
             on_release:
                 app.root.current = 'main'
-                root.manager.transition.direction = 'right'
+                root.manager.transition.direction = 'down'
+
+<BBoxScreen>:
+    name: 'bboxscreen'
+    # FloatLayout:
+    GridLayout:
+        rows: 3
+        Label:
+            id: labelbbox
+            text: 'Nada Selecionado'
+        Button:
+            text: 'Confirmar'
+            on_release:
+                root.get_codes()
+        Button:
+            text: 'Voltar'
+            # size_hint: 0.2, 0.05
+            on_release:
+                app.root.current = 'main'
+                root.manager.transition.direction = 'up'
 
 
 <DownloadScreenShp>:
@@ -131,27 +146,4 @@ WindowManager:
             text: 'Voltar'
             on_release:
                 app.root.current = 'main'
-                root.manager.transition.direction = 'down'
-
-
-
-
-# <CustomPopup>:
-#     size_hint: 0.5, 0.5
-#     title: "Selecione o arquivo 'Inventario.csv'"
-#     FileChooserListView:
-#         id: filechooser
-#         size_hint: 1,1
-#         filters: ['*.csv']
-#         on_submit:
-#             root.select_inventario(filechooser.selection)
-
-<ShapefilePopup>:
-    size_hint: 0.5, 0.5
-    title: "Selecione o arquivo Shapefile '*.shp'"
-    FileChooserListView:
-        id: shapefile_chooser
-        size_hint: 1,1
-        filters: ['*.shp']
-        on_submit:
-            root.select_shapefile(shapefile_chooser.selection)
+                root.manager.transition.direction = 'right'
