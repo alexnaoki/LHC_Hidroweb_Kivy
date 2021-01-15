@@ -122,7 +122,7 @@ class ShapefileScreen(Screen):
                     if Point((float(row['Longitude']), float(row['Latitude']))).within(boundary):
                         print('Dentro')
                         print(float(row['Latitude']), float(row['Longitude']), int(row['Codigo']))
-                        mark = MapMarker(lat=float(row['Latitude']), lon=float(row['Longitude']))
+                        mark = MapMarker(lat=float(row['Latitude']), lon=float(row['Longitude']), source='marker.png')
                         self.manager.get_screen('main').ids['map'].add_marker(mark)
                         self.codes.append(int(row['Codigo']))
                     else:
@@ -151,7 +151,7 @@ class BBoxScreen(Screen):
             for row in data:
                 if (float(row['Longitude'])>bbox[1]) and (float(row['Longitude'])<bbox[3]) and (float(row['Latitude'])>bbox[0]) and (float(row['Latitude'])<bbox[2]):
                     print(row['Longitude'], row['Latitude'], row['Codigo'])
-                    mark = MapMarker(lat=float(row['Latitude']), lon=float(row['Longitude']))
+                    mark = MapMarker(lat=float(row['Latitude']), lon=float(row['Longitude']), source='marker.png')
                     self.manager.get_screen('main').ids['map'].add_marker(mark)
                     self.codes.append(int(row['Codigo']))
                 else:
