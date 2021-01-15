@@ -11,8 +11,6 @@ WindowManager:
     DownloadScreenShp:
         id: downloadscreen_shp
 
-
-
 <MainScreen>:
     name: 'main'
     FloatLayout:
@@ -20,20 +18,19 @@ WindowManager:
             id: map
             lat: -10
             lon: -50
-            zoom: 5
+            zoom: 4
             size_hint: 1, 1
         BoxLayout:
             Button:
                 text: 'Selecionar Inventario'
                 size_hint: 0.2, 0.05
                 pos_hint: {'x':0, 'y':0}
-                # on_release: root.open_popup()
                 on_release:
                     root.change_toInventario()
                     root.manager.transition.direction = 'right'
             ToggleButton:
                 id: toggle1
-                text: 'Teste1'
+                text: 'Shp'
                 size_hint: 0.05, 0.05
                 group: 'x'
             Button:
@@ -46,7 +43,7 @@ WindowManager:
                     root.manager.transition.direction = 'up'
             ToggleButton:
                 id: toggle2
-                text: 'Teste2'
+                text: 'Area'
                 size_hint: 0.05, 0.05
                 group: 'x'
             Button:
@@ -55,7 +52,7 @@ WindowManager:
                 pos_hint: {'x':0.2, 'y':0}
                 # on_release: root.open_popup_shp()
                 on_release:
-                    root.get_bbox()
+                    # root.get_bbox()
                     root.change_toBbox()
                     root.manager.transition.direction = 'down'
             Button:
@@ -71,103 +68,231 @@ WindowManager:
 
 <InventarioScreen>:
     name: 'inventario'
-    GridLayout:
-        rows: 4
-        FileChooserListView:
-            id: filechooserscreen
-            filters: ['*.csv']
-            on_submit:
-                inventarioPath.text = filechooserscreen.selection[0]
-        Label:
-            id: inventarioPath
-            text: 'Nada selecionado'
-        Button:
-            text: 'Selecionar'
-            on_release:
-                # root.teste()
-                root.show_inventarioCluster(filechooserscreen.selection)
-        Button:
-            text: 'Voltar'
-            on_release:
-                app.root.current='main'
-                root.manager.transition.direction = "left"
+    canvas.before:
+        Color:
+            rgba: (1,1,1,1)
+        Rectangle:
+            pos: 0, self.height*0.9
+            size: self.width, self.height*0.09
+        Rectangle:
+            pos: 0, self.height*0.19
+            size: self.width, self.height*0.1
+    Label:
+        text: "SELECIONE O [i]*.csv[/i] do [b]INVENTARIO[/b]"
+        markup: True
+        size_hint: 1, 0.1
+        pos_hint: {'x':0, 'y':0.9}
+        font_size: '20sp'
+        color: 0,0,0,1
+
+    FileChooserListView:
+        id: filechooserscreen
+        size_hint: 1, 0.6
+        pos_hint: {'x': 0, 'y': 0.3}
+        filters: ['*.csv']
+        on_submit:
+            inventarioPath.text ='[b]Selecionado:[/b]'+'\n'+ filechooserscreen.selection[0]
+    Label:
+        id: inventarioPath
+        size_hint: 1, 0.1
+        pos_hint: {'x': 0, 'y': 0.2}
+        color: 0,0,0,1
+        markup: True
+        text: '[b]Nada selecionado[/b]'
+    Button:
+        text: 'Selecionar'
+        size_hint: 0.2, 0.07
+        pos_hint: {'x': 0.2, 'y': 0.10}
+        on_release:
+            # root.teste()
+            root.show_inventarioCluster(filechooserscreen.selection)
+    Button:
+        text: 'Voltar'
+        size_hint: 0.2, 0.07
+        pos_hint: {'x': 0.6, 'y': 0.10}
+        on_release:
+            app.root.current='main'
+            root.manager.transition.direction = "left"
+    Label:
+        text: "[b]Aviso: [/b]Apos clicar no botao de 'Selecionar' aguarde o processo acabar."
+        markup: True
+        color: 1,1,1,1
+        size_hint: 1, 0.1
+        pos_hint: {'x': 0, 'y': 0}
 
 <ShapefileScreen>:
     name: 'shapefilescreen'
-    GridLayout:
-        rows: 4
-        FileChooserListView:
-            id: filechoosershape
-            filters: ['*.shp']
-            on_submit: shapePath.text = filechoosershape.selection[0]
-        Label:
-            id: shapePath
-            text: 'Nada selecionado'
-        Button:
-            text: 'Selecionar'
-            on_release:
-                root.get_codes(filechoosershape.selection)
+    canvas.before:
+        Color:
+            rgba: (1,1,1,1)
+        Rectangle:
+            pos: 0, self.height*0.9
+            size: self.width, self.height*0.09
+        Rectangle:
+            pos: 0, self.height*0.19
+            size: self.width, self.height*0.1
+    Label:
+        text: "SELECIONE O [i]*.shp[/i] do [b]SHAPEFILE[/b]"
+        markup: True
+        size_hint: 1, 0.1
+        pos_hint: {'x':0, 'y':0.9}
+        font_size: '20sp'
+        color: 0,0,0,1
+    FileChooserListView:
+        id: filechoosershape
+        size_hint: 1, 0.6
+        pos_hint: {'x': 0, 'y': 0.3}
+        filters: ['*.shp']
+        on_submit: shapePath.text = '[b]Selecionado:[/b]'+'\n'+filechoosershape.selection[0]
+    Label:
+        id: shapePath
+        size_hint: 1, 0.1
+        pos_hint: {'x': 0, 'y': 0.2}
+        color: 0,0,0,1
+        markup: True
+        text: '[b]Nada selecionado[/b]'
+    Button:
+        text: 'Selecionar'
+        size_hint: 0.2, 0.07
+        pos_hint: {'x': 0.2, 'y': 0.10}
+        on_release:
+            root.get_codes(filechoosershape.selection)
 
-        Button:
-            text: 'Voltar'
-            on_release:
-                app.root.current = 'main'
-                root.manager.transition.direction = 'down'
-
+    Button:
+        text: 'Voltar'
+        size_hint: 0.2, 0.07
+        pos_hint: {'x': 0.6, 'y': 0.10}
+        on_release:
+            app.root.current = 'main'
+            root.manager.transition.direction = 'down'
+    Label:
+        text: "[b]Aviso: [/b]Apos clicar no botao de 'Selecionar' aguarde o processo acabar."
+        markup: True
+        color: 1,1,1,1
+        size_hint: 1, 0.1
+        pos_hint: {'x': 0, 'y': 0}
 <BBoxScreen>:
     name: 'bboxscreen'
     # FloatLayout:
-    GridLayout:
-        rows: 3
-        Label:
-            id: labelbbox
-            text: 'Nada Selecionado'
-        Button:
-            text: 'Confirmar'
-            on_release:
-                root.get_codes()
-        Button:
-            text: 'Voltar'
-            # size_hint: 0.2, 0.05
-            on_release:
-                app.root.current = 'main'
-                root.manager.transition.direction = 'up'
+    canvas.before:
+        Color:
+            rgba: (1,1,1,1)
+        Rectangle:
+            pos: 0, self.height*0.9
+            size: self.width, self.height*0.09
+        Rectangle:
+            pos: 0, self.height*0.19
+            size: self.width, self.height*0.1
+    Label:
+        text: "[b]MOVA[/b] O MAPA PARA A LATITUDE E LONGITUDE DESEJADA"
+        markup: True
+        size_hint: 1, 0.1
+        pos_hint: {'x':0, 'y':0.9}
+        font_size: '20sp'
+        color: 0,0,0,1
 
+    MapView:
+        id: mapbbox
+        lat: -10
+        lon: -50
+        zoom: 4
+        size_hint: 0.6, 0.55
+        pos_hint: {'x':0.2, 'y':0.325}
 
+    Label:
+        id: labelbbox
+        size_hint: 1, 0.1
+        pos_hint: {'x': 0, 'y': 0.2}
+        color: 0,0,0,1
+        markup: True
+        # text: 'Nada Selecionado'
+        text: f'Latitude: [{mapbbox.bbox[2]:.3f}   {mapbbox.bbox[0]:.3f}]\nLongitude:[{mapbbox.bbox[3]:.3f}   {mapbbox.bbox[1]:.3f}]'
+
+    Button:
+        text: 'Ver Lat Lon'
+        size_hint: 0.15, 0.05
+        pos_hint: {'x':0.2, 'y':0.22}
+        on_release:
+            root.get_bbox()
+    Button:
+        text: 'Confirmar'
+        size_hint: 0.2, 0.07
+        pos_hint: {'x':0.2, 'y':0.1}
+        on_release:
+            root.get_codes()
+    Button:
+        text: 'Voltar'
+        size_hint: 0.2, 0.07
+        pos_hint: {'x':0.6, 'y':0.1}
+        on_release:
+            app.root.current = 'main'
+            root.manager.transition.direction = 'up'
+    Label:
+        text: "[b]Aviso: [/b]Apos clicar no botao de 'Selecionar' aguarde o processo acabar."
+        markup: True
+        color: 1,1,1,1
+        size_hint: 1, 0.1
+        pos_hint: {'x': 0, 'y': 0}
 <DownloadScreenShp>:
     name: 'downloadscreen_shp'
-    GridLayout:
-        rows: 6
-        FileChooserListView:
-            id: filechooser_downloadshp
-            dirselect: True
-            filters: [root.selected]
-        Label:
-            id: downloadShpPath
-            text: 'Nada selecionado'
-        # ToggleButton:
-        #     id: togglechuva
-        #     text: 'Chuva'
-        #     size_hint: 0.05, 0.1
-        #     group: 'chuvavazao'
-        # ToggleButton:
-        #     id: togglevazao
-        #     text: 'Vazão'
-        #     size_hint: 0.05, 0.1
-        #     group: 'chuvavazao'
-        Button:
-            text: 'Download chuva'
-            id: downloadbtn
-            on_release:
-                root.download_ANA_station()
-                # root.teste()
-        Button:
-            text: 'Download vazao'
-            id: downloadbtn_vazao
-            on_release:
-                root.download_ANA_station_vazao()
-        Button:
-            text: 'Voltar'
-            on_release:
-                app.root.current = 'main'
-                root.manager.transition.direction = 'right'
+    canvas.before:
+        Color:
+            rgba: (1,1,1,1)
+        Rectangle:
+            pos: 0, self.height*0.9
+            size: self.width, self.height*0.09
+        Rectangle:
+            pos: 0, self.height*0.19
+            size: self.width, self.height*0.1
+    Label:
+        text: "SELECIONE O DIRETORIO PARA SALVAR"
+        markup: True
+        size_hint: 1, 0.1
+        pos_hint: {'x':0, 'y':0.9}
+        font_size: '20sp'
+        color: 0,0,0,1
+
+    FileChooserListView:
+        id: filechooser_downloadshp
+        dirselect: True
+        size_hint: 1, 0.6
+        pos_hint: {'x': 0, 'y': 0.3}
+        filters: [root.selected]
+    Label:
+        id: downloadShpPath
+        size_hint: 1, 0.1
+        pos_hint: {'x': 0, 'y': 0.2}
+        color: 0,0,0,1
+        markup: True
+        text: 'Nada selecionado'
+    Button:
+        text: 'Download chuva'
+        id: downloadbtn
+        size_hint: 0.2, 0.07
+        pos_hint: {'x': 0.1, 'y': 0.10}
+
+        on_release:
+            root.download_ANA_station()
+            # root.teste()
+    Button:
+        text: 'Download vazao'
+        id: downloadbtn_vazao
+        size_hint: 0.2, 0.07
+        pos_hint: {'x': 0.4, 'y': 0.10}
+
+        on_release:
+            root.download_ANA_station_vazao()
+    Button:
+        text: 'Voltar'
+        size_hint: 0.2, 0.07
+        pos_hint: {'x': 0.7, 'y': 0.10}
+
+        on_release:
+            app.root.current = 'main'
+            root.manager.transition.direction = 'right'
+    Label:
+        text: "[b]Aviso: [/b]Nao esqueca de selecionar 'Shp' ou 'Area'."
+        markup: True
+        color: 1,1,1,1
+        size_hint: 1, 0.1
+        pos_hint: {'x': 0, 'y': 0}

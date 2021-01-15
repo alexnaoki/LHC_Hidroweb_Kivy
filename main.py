@@ -44,95 +44,17 @@ class MainScreen(Screen):
     def change_toDownload_shp(self):
         self.manager.current = 'downloadscreen_shp'
 
-    def get_bbox(self):
-        bbox = self.manager.get_screen('main').ids['map'].bbox
-        # self.manager.get_screen('bboxscreen').ids.labelbbox.text = str(self.manager.get_screen('main').ids['map'].bbox)
-        self.manager.get_screen('bboxscreen').ids.labelbbox.text = f'Latitude : [{bbox[2]:.3f}   {bbox[0]:.3f}]\nLongitude: [{bbox[3]:.3f}   {bbox[1]:.3f}]'
-        print(self.manager.get_screen('main').ids['map'].bbox)
-        self.bbox = bbox
+    # def get_bbox(self):
+    #     bbox = self.manager.get_screen('bboxscreen').ids['mapbbox'].bbox
+    #     # self.manager.get_screen('bboxscreen').ids.labelbbox.text = str(self.manager.get_screen('main').ids['map'].bbox)
+    #     self.manager.get_screen('bboxscreen').ids.labelbbox.text = f'Latitude : [{bbox[2]:.3f}   {bbox[0]:.3f}]\nLongitude: [{bbox[3]:.3f}   {bbox[1]:.3f}]'
+    #     print(self.manager.get_screen('bboxscreen').ids['mapbbox'].bbox)
+    #     self.bbox = bbox
 
-
-    # def download_ANA_station(self):
-    #     typeData=2
-    #     list_codes = self.codes
-    #     for station in list_codes:
-    #         api = 'http://telemetriaws1.ana.gov.br/ServiceANA.asmx/HidroSerieHistorica'
-    #         self.params = {'codEstacao': station, 'dataInicio': '', 'dataFim': '', 'tipoDados': '{}'.format(typeData), 'nivelConsistencia': ''}
-    #         url_req = PreparedRequest()
-    #         url_req.prepare_url(api, self.params)
-    #         self.req = UrlRequest(
-    #                         url_req.url,
-    #                         on_success=self._download_sucess,
-    #                         # on_success=self._donwload_teste,
-    #                         on_error=self._download_error,
-    #                         on_failure=self._download_error
-    #                          )
-    #         print(station)
 
     def _donwload_teste(self, req, result):
         print('sucesso')
         print(result)
-
-    # def _download_sucess(self, req, result):
-    #     try:
-    #         # print(self.req.result)
-    #         tree = ET.ElementTree(ET.fromstring(result))
-    #         # print(tree)
-    #         root = tree.getroot()
-    #
-    #         list_data = []
-    #         list_consistenciaF = []
-    #         list_month_dates = []
-    #         for i in root.iter('SerieHistorica'):
-    #             codigo = i.find("EstacaoCodigo").text
-    #             consistencia = i.find("NivelConsistencia").text
-    #             date = i.find("DataHora").text
-    #             date = datetime.datetime.strptime(date, '%Y-%m-%d %H:%M:%S')
-    #             last_day = calendar.monthrange(date.year, date.month)[1]
-    #             month_dates = [date + datetime.timedelta(days=i) for i in range(last_day)]
-    #             data = []
-    #             list_consistencia = []
-    #             for day in range(last_day):
-    #                 # if params['tipoDados'] == '3':
-    #                 #     value = 'Vazao{:02}'.format(day+1)
-    #                 #     try:
-    #                 #         data.append(float(i.find(value).text))
-    #                 #         list_consistencia.append(int(consistencia))
-    #                 #     except TypeError:
-    #                 #         data.append(i.find(value).text)
-    #                 #         list_consistencia.append(int(consistencia))
-    #                 #     except AttributeError:
-    #                 #         data.append(None)
-    #                 #         list_consistencia.append(int(consistencia))
-    #                 if self.params['tipoDados'] == '2':
-    #                     value = 'Chuva{:02}'.format(day+1)
-    #                     try:
-    #                         data.append(float(i.find(value).text))
-    #                         list_consistencia.append(consistencia)
-    #                     except TypeError:
-    #                         data.append(i.find(value).text)
-    #                         list_consistencia.append(consistencia)
-    #                     except AttributeError:
-    #                         data.append(None)
-    #                         list_consistencia.append(consistencia)
-    #             list_data = list_data + data
-    #             list_consistenciaF = list_consistenciaF + list_consistencia
-    #             list_month_dates = list_month_dates + month_dates
-    #         typeData = 2
-    #         print(list_data)
-    #         print(list_month_dates)
-    #         print(list_consistenciaF)
-    #         if len(list_data) > 0:
-    #             # df = pd.DataFrame({'Date': list_month_dates, 'Consistence_{}_{}'.format(typeData,codigo): list_consistenciaF, 'Data{}_{}'.format(typeData, codigo): list_data})
-    #             # print(df.to_csv(f'{codigo}_teste.csv'))
-    #             rows = zip(list_month_dates, list_consistenciaF, list_data)
-    #             with open(f'{codigo}_teste_sempandas.csv', 'w', newline='') as f:
-    #                 writer = csv.writer(f)
-    #                 writer.writerow(('Date', f'Consistence_{typeData}_{codigo}', f'Data_{codigo}'))
-    #                 for row in rows:
-    #                     writer.writerow(row)
-    #     except:
-    #         print('ERRO')
 
     def _download_error(self, *args):
         print('ERRO download')
@@ -211,8 +133,16 @@ class ShapefileScreen(Screen):
 
 class BBoxScreen(Screen):
     codes = []
+
+    def get_bbox(self):
+        bbox = self.manager.get_screen('bboxscreen').ids['mapbbox'].bbox
+        # self.manager.get_screen('bboxscreen').ids.labelbbox.text = str(self.manager.get_screen('main').ids['map'].bbox)
+        self.manager.get_screen('bboxscreen').ids.labelbbox.text = f'Latitude : [{bbox[2]:.3f}   {bbox[0]:.3f}]\nLongitude: [{bbox[3]:.3f}   {bbox[1]:.3f}]'
+        print(self.manager.get_screen('bboxscreen').ids['mapbbox'].bbox)
+        self.bbox = bbox
     def get_codes(self):
-        bbox = self.manager.get_screen('main').bbox
+        # bbox = self.manager.get_screen('main').bbox
+        bbox = self.manager.get_screen('bboxscreen').ids['mapbbox'].bbox
         print(bbox)
         inventario_path = self.manager.get_screen('inventario').ids.filechooserscreen.selection[0]
         print(inventario_path)
@@ -397,7 +327,6 @@ class DownloadScreenShp(Screen):
 
     def _download_sucess_vazao(self, req, result):
         try:
-            # print(req)
             tree = ET.ElementTree(ET.fromstring(result))
             root = tree.getroot()
 
@@ -426,17 +355,7 @@ class DownloadScreenShp(Screen):
                         except AttributeError:
                             data.append(None)
                             list_consistencia.append(int(consistencia))
-                    # if self.params['tipoDados'] == '2':
-                    #     value = 'Chuva{:02}'.format(day+1)
-                    #     try:
-                    #         data.append(float(i.find(value).text))
-                    #         list_consistencia.append(consistencia)
-                    #     except TypeError:
-                    #         data.append(i.find(value).text)
-                    #         list_consistencia.append(consistencia)
-                    #     except AttributeError:
-                    #         data.append(None)
-                    #         list_consistencia.append(consistencia)
+
                 list_data = list_data + data
                 list_consistenciaF = list_consistenciaF + list_consistencia
                 list_month_dates = list_month_dates + month_dates
