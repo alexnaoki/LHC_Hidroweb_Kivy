@@ -31,7 +31,11 @@ WindowManager:
                 on_release:
                     root.change_toInventario()
                     root.manager.transition.direction = 'right'
-
+            ToggleButton:
+                id: toggle1
+                text: 'Teste1'
+                size_hint: 0.05, 0.05
+                group: 'x'
             Button:
                 text: 'Selecionar Shapefile'
                 size_hint: 0.2, 0.05
@@ -40,7 +44,11 @@ WindowManager:
                 on_release:
                     root.change_toShape()
                     root.manager.transition.direction = 'up'
-
+            ToggleButton:
+                id: toggle2
+                text: 'Teste2'
+                size_hint: 0.05, 0.05
+                group: 'x'
             Button:
                 text: 'Selecionar area'
                 size_hint: 0.2, 0.05
@@ -129,7 +137,7 @@ WindowManager:
 <DownloadScreenShp>:
     name: 'downloadscreen_shp'
     GridLayout:
-        rows: 4
+        rows: 6
         FileChooserListView:
             id: filechooser_downloadshp
             dirselect: True
@@ -137,11 +145,27 @@ WindowManager:
         Label:
             id: downloadShpPath
             text: 'Nada selecionado'
+        # ToggleButton:
+        #     id: togglechuva
+        #     text: 'Chuva'
+        #     size_hint: 0.05, 0.1
+        #     group: 'chuvavazao'
+        # ToggleButton:
+        #     id: togglevazao
+        #     text: 'Vazão'
+        #     size_hint: 0.05, 0.1
+        #     group: 'chuvavazao'
         Button:
+            text: 'Download chuva'
             id: downloadbtn
             on_release:
                 root.download_ANA_station()
                 # root.teste()
+        Button:
+            text: 'Download vazao'
+            id: downloadbtn_vazao
+            on_release:
+                root.download_ANA_station_vazao()
         Button:
             text: 'Voltar'
             on_release:

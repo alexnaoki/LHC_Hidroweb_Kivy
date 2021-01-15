@@ -52,87 +52,87 @@ class MainScreen(Screen):
         self.bbox = bbox
 
 
-    def download_ANA_station(self):
-        typeData=2
-        list_codes = self.codes
-        for station in list_codes:
-            api = 'http://telemetriaws1.ana.gov.br/ServiceANA.asmx/HidroSerieHistorica'
-            self.params = {'codEstacao': station, 'dataInicio': '', 'dataFim': '', 'tipoDados': '{}'.format(typeData), 'nivelConsistencia': ''}
-            url_req = PreparedRequest()
-            url_req.prepare_url(api, self.params)
-            self.req = UrlRequest(
-                            url_req.url,
-                            on_success=self._download_sucess,
-                            # on_success=self._donwload_teste,
-                            on_error=self._download_error,
-                            on_failure=self._download_error
-                             )
-            print(station)
+    # def download_ANA_station(self):
+    #     typeData=2
+    #     list_codes = self.codes
+    #     for station in list_codes:
+    #         api = 'http://telemetriaws1.ana.gov.br/ServiceANA.asmx/HidroSerieHistorica'
+    #         self.params = {'codEstacao': station, 'dataInicio': '', 'dataFim': '', 'tipoDados': '{}'.format(typeData), 'nivelConsistencia': ''}
+    #         url_req = PreparedRequest()
+    #         url_req.prepare_url(api, self.params)
+    #         self.req = UrlRequest(
+    #                         url_req.url,
+    #                         on_success=self._download_sucess,
+    #                         # on_success=self._donwload_teste,
+    #                         on_error=self._download_error,
+    #                         on_failure=self._download_error
+    #                          )
+    #         print(station)
 
     def _donwload_teste(self, req, result):
         print('sucesso')
         print(result)
 
-    def _download_sucess(self, req, result):
-        try:
-            # print(self.req.result)
-            tree = ET.ElementTree(ET.fromstring(result))
-            # print(tree)
-            root = tree.getroot()
-
-            list_data = []
-            list_consistenciaF = []
-            list_month_dates = []
-            for i in root.iter('SerieHistorica'):
-                codigo = i.find("EstacaoCodigo").text
-                consistencia = i.find("NivelConsistencia").text
-                date = i.find("DataHora").text
-                date = datetime.datetime.strptime(date, '%Y-%m-%d %H:%M:%S')
-                last_day = calendar.monthrange(date.year, date.month)[1]
-                month_dates = [date + datetime.timedelta(days=i) for i in range(last_day)]
-                data = []
-                list_consistencia = []
-                for day in range(last_day):
-                    # if params['tipoDados'] == '3':
-                    #     value = 'Vazao{:02}'.format(day+1)
-                    #     try:
-                    #         data.append(float(i.find(value).text))
-                    #         list_consistencia.append(int(consistencia))
-                    #     except TypeError:
-                    #         data.append(i.find(value).text)
-                    #         list_consistencia.append(int(consistencia))
-                    #     except AttributeError:
-                    #         data.append(None)
-                    #         list_consistencia.append(int(consistencia))
-                    if self.params['tipoDados'] == '2':
-                        value = 'Chuva{:02}'.format(day+1)
-                        try:
-                            data.append(float(i.find(value).text))
-                            list_consistencia.append(consistencia)
-                        except TypeError:
-                            data.append(i.find(value).text)
-                            list_consistencia.append(consistencia)
-                        except AttributeError:
-                            data.append(None)
-                            list_consistencia.append(consistencia)
-                list_data = list_data + data
-                list_consistenciaF = list_consistenciaF + list_consistencia
-                list_month_dates = list_month_dates + month_dates
-            typeData = 2
-            print(list_data)
-            print(list_month_dates)
-            print(list_consistenciaF)
-            if len(list_data) > 0:
-                # df = pd.DataFrame({'Date': list_month_dates, 'Consistence_{}_{}'.format(typeData,codigo): list_consistenciaF, 'Data{}_{}'.format(typeData, codigo): list_data})
-                # print(df.to_csv(f'{codigo}_teste.csv'))
-                rows = zip(list_month_dates, list_consistenciaF, list_data)
-                with open(f'{codigo}_teste_sempandas.csv', 'w', newline='') as f:
-                    writer = csv.writer(f)
-                    writer.writerow(('Date', f'Consistence_{typeData}_{codigo}', f'Data_{codigo}'))
-                    for row in rows:
-                        writer.writerow(row)
-        except:
-            print('ERRO')
+    # def _download_sucess(self, req, result):
+    #     try:
+    #         # print(self.req.result)
+    #         tree = ET.ElementTree(ET.fromstring(result))
+    #         # print(tree)
+    #         root = tree.getroot()
+    #
+    #         list_data = []
+    #         list_consistenciaF = []
+    #         list_month_dates = []
+    #         for i in root.iter('SerieHistorica'):
+    #             codigo = i.find("EstacaoCodigo").text
+    #             consistencia = i.find("NivelConsistencia").text
+    #             date = i.find("DataHora").text
+    #             date = datetime.datetime.strptime(date, '%Y-%m-%d %H:%M:%S')
+    #             last_day = calendar.monthrange(date.year, date.month)[1]
+    #             month_dates = [date + datetime.timedelta(days=i) for i in range(last_day)]
+    #             data = []
+    #             list_consistencia = []
+    #             for day in range(last_day):
+    #                 # if params['tipoDados'] == '3':
+    #                 #     value = 'Vazao{:02}'.format(day+1)
+    #                 #     try:
+    #                 #         data.append(float(i.find(value).text))
+    #                 #         list_consistencia.append(int(consistencia))
+    #                 #     except TypeError:
+    #                 #         data.append(i.find(value).text)
+    #                 #         list_consistencia.append(int(consistencia))
+    #                 #     except AttributeError:
+    #                 #         data.append(None)
+    #                 #         list_consistencia.append(int(consistencia))
+    #                 if self.params['tipoDados'] == '2':
+    #                     value = 'Chuva{:02}'.format(day+1)
+    #                     try:
+    #                         data.append(float(i.find(value).text))
+    #                         list_consistencia.append(consistencia)
+    #                     except TypeError:
+    #                         data.append(i.find(value).text)
+    #                         list_consistencia.append(consistencia)
+    #                     except AttributeError:
+    #                         data.append(None)
+    #                         list_consistencia.append(consistencia)
+    #             list_data = list_data + data
+    #             list_consistenciaF = list_consistenciaF + list_consistencia
+    #             list_month_dates = list_month_dates + month_dates
+    #         typeData = 2
+    #         print(list_data)
+    #         print(list_month_dates)
+    #         print(list_consistenciaF)
+    #         if len(list_data) > 0:
+    #             # df = pd.DataFrame({'Date': list_month_dates, 'Consistence_{}_{}'.format(typeData,codigo): list_consistenciaF, 'Data{}_{}'.format(typeData, codigo): list_data})
+    #             # print(df.to_csv(f'{codigo}_teste.csv'))
+    #             rows = zip(list_month_dates, list_consistenciaF, list_data)
+    #             with open(f'{codigo}_teste_sempandas.csv', 'w', newline='') as f:
+    #                 writer = csv.writer(f)
+    #                 writer.writerow(('Date', f'Consistence_{typeData}_{codigo}', f'Data_{codigo}'))
+    #                 for row in rows:
+    #                     writer.writerow(row)
+    #     except:
+    #         print('ERRO')
 
     def _download_error(self, *args):
         print('ERRO download')
@@ -235,29 +235,40 @@ class DownloadScreenShp(Screen):
         self.ids.downloadShpPath.text = os.path.dirname(filename)
 
     def teste(self):
-        folder_name = 'dados_LHC_hidroweb'
+        print(self.manager.get_screen('main').ids.toggle1.state)
 
-        self.save_folder = os.path.join(self.ids.downloadShpPath.text, folder_name)
-        if not os.path.exists(self.save_folder):
-            print('nao existe')
-            os.mkdir(self.save_folder)
-        else:
-            print('existe')
 
     def download_ANA_station(self):
         folder_name = 'dados_LHC_hidroweb'
+        b = 2
         self.save_folder = os.path.join(self.ids.downloadShpPath.text, folder_name)
         if not os.path.exists(self.save_folder):
             print('nao existe, criando pasta')
             os.mkdir(self.save_folder)
-        else:
+        elif os.path.exists(self.save_folder):
             print('existe')
 
-        typeData=2
-        list_codes = self.manager.get_screen('shapefilescreen').codes
+        print(self.manager.get_screen('main').ids.toggle1.state)
+        print(self.manager.get_screen('main').ids.toggle2.state)
+
+        if self.manager.get_screen('main').ids.toggle1.state == 'down':
+            list_codes = self.manager.get_screen('shapefilescreen').codes
+        if self.manager.get_screen('main').ids.toggle2.state == 'down':
+            print('toggle2 down')
+            list_codes = self.manager.get_screen('bboxscreen').codes
+            print(list_codes)
+
+        # if self.manager.get_screen('downloadscreen_shp').ids.togglechuva == 'down':
+        #     b = 2
+        # if self.manager.get_screen('downloadscreen_shp').ids.togglevazao == 'down':
+        #     b = 3
+        # else:
+        #     b = 3
+        #     print('erro')
+        #     list_codes = []
         for station in list_codes:
             api = 'http://telemetriaws1.ana.gov.br/ServiceANA.asmx/HidroSerieHistorica'
-            self.params = {'codEstacao': station, 'dataInicio': '', 'dataFim': '', 'tipoDados': '{}'.format(typeData), 'nivelConsistencia': ''}
+            self.params = {'codEstacao': station, 'dataInicio': '', 'dataFim': '', 'tipoDados': '{}'.format(b), 'nivelConsistencia': ''}
             url_req = PreparedRequest()
             url_req.prepare_url(api, self.params)
             self.req = UrlRequest(
@@ -277,6 +288,7 @@ class DownloadScreenShp(Screen):
 
     def _download_sucess(self, req, result):
         try:
+            # print(req)
             tree = ET.ElementTree(ET.fromstring(result))
             root = tree.getroot()
 
@@ -292,8 +304,9 @@ class DownloadScreenShp(Screen):
                 month_dates = [date + datetime.timedelta(days=i) for i in range(last_day)]
                 data = []
                 list_consistencia = []
+                print(self.params['tipoDados'])
                 for day in range(last_day):
-                    # if params['tipoDados'] == '3':
+                    # if self.params['tipoDados'] == '3':
                     #     value = 'Vazao{:02}'.format(day+1)
                     #     try:
                     #         data.append(float(i.find(value).text))
@@ -318,17 +331,17 @@ class DownloadScreenShp(Screen):
                 list_data = list_data + data
                 list_consistenciaF = list_consistenciaF + list_consistencia
                 list_month_dates = list_month_dates + month_dates
-            typeData = 2
+            # typeData = 2
             print(list_data)
-            print(list_month_dates)
-            print(list_consistenciaF)
+            # print(list_month_dates)
+            # print(list_consistenciaF)
             if len(list_data) > 0:
-                # df = pd.DataFrame({'Date': list_month_dates, 'Consistence_{}_{}'.format(typeData,codigo): list_consistenciaF, 'Data{}_{}'.format(typeData, codigo): list_data})
-                # print(df.to_csv(f'{codigo}_teste.csv'))
+                # print(typedata)
+                typedata = self.params['tipoDados']
                 rows = zip(list_month_dates, list_consistenciaF, list_data)
-                with open(os.path.join(self.save_folder,f'{codigo}_teste_sempandas.csv'), 'w', newline='') as f:
+                with open(os.path.join(self.save_folder,f'{typedata}_{codigo}.csv'), 'w', newline='') as f:
                     writer = csv.writer(f)
-                    writer.writerow(('Date', f'Consistence_{typeData}_{codigo}', f'Data_{codigo}'))
+                    writer.writerow(('Date', f'Consistence_{typedata}_{codigo}', f'Data_{typedata}_{codigo}'))
                     for row in rows:
                         writer.writerow(row)
         except:
@@ -336,6 +349,114 @@ class DownloadScreenShp(Screen):
 
     def _download_error(self, *args):
         print('ERRO download')
+
+    def download_ANA_station_vazao(self):
+        folder_name = 'dados_LHC_hidroweb'
+        b = 3
+        self.save_folder = os.path.join(self.ids.downloadShpPath.text, folder_name)
+        if not os.path.exists(self.save_folder):
+            print('nao existe, criando pasta')
+            os.mkdir(self.save_folder)
+        elif os.path.exists(self.save_folder):
+            print('existe')
+
+        print(self.manager.get_screen('main').ids.toggle1.state)
+        print(self.manager.get_screen('main').ids.toggle2.state)
+
+        if self.manager.get_screen('main').ids.toggle1.state == 'down':
+            list_codes = self.manager.get_screen('shapefilescreen').codes
+        if self.manager.get_screen('main').ids.toggle2.state == 'down':
+            print('toggle2 down')
+            list_codes = self.manager.get_screen('bboxscreen').codes
+            print(list_codes)
+
+        # if self.manager.get_screen('downloadscreen_shp').ids.togglechuva == 'down':
+        #     b = 2
+        # if self.manager.get_screen('downloadscreen_shp').ids.togglevazao == 'down':
+        #     b = 3
+        # else:
+        #     b = 3
+        #     print('erro')
+        #     list_codes = []
+        for station in list_codes:
+            api = 'http://telemetriaws1.ana.gov.br/ServiceANA.asmx/HidroSerieHistorica'
+            self.params = {'codEstacao': station, 'dataInicio': '', 'dataFim': '', 'tipoDados': '{}'.format(b), 'nivelConsistencia': ''}
+            url_req = PreparedRequest()
+            url_req.prepare_url(api, self.params)
+            self.req = UrlRequest(
+                            url_req.url,
+                            on_success=self._download_sucess_vazao,
+                            # on_success=self._donwload_teste,
+                            on_error=self._download_error,
+                            on_failure=self._download_error
+                             )
+            # print(self.req)
+            # self.req.wait()
+            print(station)
+
+
+    def _download_sucess_vazao(self, req, result):
+        try:
+            # print(req)
+            tree = ET.ElementTree(ET.fromstring(result))
+            root = tree.getroot()
+
+            list_data = []
+            list_consistenciaF = []
+            list_month_dates = []
+            for i in root.iter('SerieHistorica'):
+                codigo = i.find("EstacaoCodigo").text
+                consistencia = i.find("NivelConsistencia").text
+                date = i.find("DataHora").text
+                date = datetime.datetime.strptime(date, '%Y-%m-%d %H:%M:%S')
+                last_day = calendar.monthrange(date.year, date.month)[1]
+                month_dates = [date + datetime.timedelta(days=i) for i in range(last_day)]
+                data = []
+                list_consistencia = []
+                print(self.params['tipoDados'])
+                for day in range(last_day):
+                    if self.params['tipoDados'] == '3':
+                        value = 'Vazao{:02}'.format(day+1)
+                        try:
+                            data.append(float(i.find(value).text))
+                            list_consistencia.append(int(consistencia))
+                        except TypeError:
+                            data.append(i.find(value).text)
+                            list_consistencia.append(int(consistencia))
+                        except AttributeError:
+                            data.append(None)
+                            list_consistencia.append(int(consistencia))
+                    # if self.params['tipoDados'] == '2':
+                    #     value = 'Chuva{:02}'.format(day+1)
+                    #     try:
+                    #         data.append(float(i.find(value).text))
+                    #         list_consistencia.append(consistencia)
+                    #     except TypeError:
+                    #         data.append(i.find(value).text)
+                    #         list_consistencia.append(consistencia)
+                    #     except AttributeError:
+                    #         data.append(None)
+                    #         list_consistencia.append(consistencia)
+                list_data = list_data + data
+                list_consistenciaF = list_consistenciaF + list_consistencia
+                list_month_dates = list_month_dates + month_dates
+            # typeData = 2
+            print(list_data)
+            # print(list_month_dates)
+            # print(list_consistenciaF)
+            if len(list_data) > 0:
+                # print(typedata)
+                typedata = self.params['tipoDados']
+                rows = zip(list_month_dates, list_consistenciaF, list_data)
+                with open(os.path.join(self.save_folder,f'{typedata}_{codigo}.csv'), 'w', newline='') as f:
+                    writer = csv.writer(f)
+                    writer.writerow(('Date', f'Consistence_{typedata}_{codigo}', f'Data_{typedata}_{codigo}'))
+                    for row in rows:
+                        writer.writerow(row)
+        except:
+            print('ERRO')
+
+
 
 class RootApp(App):
     def build(self):
