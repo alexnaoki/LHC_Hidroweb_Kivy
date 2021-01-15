@@ -12,9 +12,10 @@ The first interaction can be overwhelming for people with little to no knowledge
 Download **Rainfall** or **Flow** data with a **Shapefile** (WGS84).
 ![](https://github.com/alexnaoki/LHC_Hidroweb_Kivy/blob/master/gifs/download_shp.gif)
 
-Or locate yourself an area.
+Or locate yourself an **area**.
 ![](https://github.com/alexnaoki/LHC_Hidroweb_Kivy/blob/master/gifs/download_area.gif)
 
+-------------
 Step 1:
 - Clone (Download) this repository
 
