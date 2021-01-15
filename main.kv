@@ -2,6 +2,14 @@
 WindowManager:
     MainScreen:
         id: main
+    InventarioScreen:
+        id: inventario
+    ShapefileScreen:
+        id: shapefilescreen
+    BBoxScreen:
+        id:bboxscreen
+    DownloadScreenShp:
+        id: downloadscreen_shp
 
 <MainScreen>:
     name: 'main'
@@ -10,61 +18,281 @@ WindowManager:
             id: map
             lat: -10
             lon: -50
-            zoom: 5
-            size_hint: 1, 0.99
-        ProgressBar:
-            id: progressbar
-            size_hint: 1, 0.01
-            pos_hint: {'x':0, 'y':0.99}
-            max: 100
+            zoom: 4
+            size_hint: 1, 1
+        BoxLayout:
+            Button:
+                text: 'Selecionar Inventario'
+                size_hint: 0.2, 0.05
+                pos_hint: {'x':0, 'y':0}
+                on_release:
+                    root.change_toInventario()
+                    root.manager.transition.direction = 'right'
+            ToggleButton:
+                id: toggle1
+                text: 'Shp'
+                size_hint: 0.05, 0.05
+                group: 'x'
+            Button:
+                text: 'Selecionar Shapefile'
+                size_hint: 0.2, 0.05
+                pos_hint: {'x':0.2, 'y':0}
+                # on_release: root.open_popup_shp()
+                on_release:
+                    root.change_toShape()
+                    root.manager.transition.direction = 'up'
+            ToggleButton:
+                id: toggle2
+                text: 'Area'
+                size_hint: 0.05, 0.05
+                group: 'x'
+            Button:
+                text: 'Selecionar area'
+                size_hint: 0.2, 0.05
+                pos_hint: {'x':0.2, 'y':0}
+                # on_release: root.open_popup_shp()
+                on_release:
+                    # root.get_bbox()
+                    root.change_toBbox()
+                    root.manager.transition.direction = 'down'
+            Button:
+                text: 'Download'
+                size_hint: 0.2, 0.05
+                pos_hint: {'x':0.4, 'y':0}
+                # on_release: root.download_ANA_station()
+                on_release:
+                    root.change_toDownload_shp()
+                    root.manager.transition.direction = 'left'
+                # root.show_codes()
 
-        Button:
-            text: 'Selecionar Inventario'
-            size_hint: 0.2, 0.05
-            pos_hint: {'x':0, 'y':0}
-            on_release: root.open_popup()
 
-        Button:
-            text: 'Mostrar Inventario'
-            size_hint: 0.2, 0.05
-            pos_hint: {'x': 0, 'y':0.05}
-            # on_release: root.show_inventario_cluster()
-            on_release: target=root.show_inventario_cluster()
+<InventarioScreen>:
+    name: 'inventario'
+    canvas.before:
+        Color:
+            rgba: (1,1,1,1)
+        Rectangle:
+            pos: 0, self.height*0.9
+            size: self.width, self.height*0.09
+        Rectangle:
+            pos: 0, self.height*0.19
+            size: self.width, self.height*0.1
+    Label:
+        text: "SELECIONE O [i]*.csv[/i] do [b]INVENTARIO[/b]"
+        markup: True
+        size_hint: 1, 0.1
+        pos_hint: {'x':0, 'y':0.9}
+        font_size: '20sp'
+        color: 0,0,0,1
 
-        Button:
-            text: 'Selecionar Shapefile'
-            size_hint: 0.2, 0.05
-            pos_hint: {'x':0.2, 'y':0}
-            on_release: root.open_popup_shp()
-        Button:
-            text: 'Mostrar Shapefile'
-            size_hint: 0.2, 0.05
-            pos_hint: {'x':0.2, 'y':0.05}
-            on_release: root.check_within_shp()
-            # on_release: threading.Thread(target=root.check_within_shp).start()
-
-        Button:
-            text: 'Download'
-            size_hint: 0.2, 0.05
-            pos_hint: {'x':0.4, 'y':0}
-            on_release: root.download_ANA_station()
-
-<CustomPopup>:
-    size_hint: 0.5, 0.5
-    title: "Selecione o arquivo 'Inventario.csv'"
     FileChooserListView:
-        id: filechooser
-        size_hint: 1,1
+        id: filechooserscreen
+        size_hint: 1, 0.6
+        pos_hint: {'x': 0, 'y': 0.3}
         filters: ['*.csv']
         on_submit:
-            root.select_inventario(filechooser.selection)
+            inventarioPath.text ='[b]Selecionado:[/b]'+'\n'+ filechooserscreen.selection[0]
+    Label:
+        id: inventarioPath
+        size_hint: 1, 0.1
+        pos_hint: {'x': 0, 'y': 0.2}
+        color: 0,0,0,1
+        markup: True
+        text: '[b]Nada selecionado[/b]'
+    Button:
+        text: 'Selecionar'
+        size_hint: 0.2, 0.07
+        pos_hint: {'x': 0.2, 'y': 0.10}
+        on_release:
+            # root.teste()
+            root.show_inventarioCluster(filechooserscreen.selection)
+    Button:
+        text: 'Voltar'
+        size_hint: 0.2, 0.07
+        pos_hint: {'x': 0.6, 'y': 0.10}
+        on_release:
+            app.root.current='main'
+            root.manager.transition.direction = "left"
+    Label:
+        text: "[b]Aviso: [/b]Apos clicar no botao de 'Selecionar' aguarde o processo acabar."
+        markup: True
+        color: 1,1,1,1
+        size_hint: 1, 0.1
+        pos_hint: {'x': 0, 'y': 0}
 
-<ShapefilePopup>:
-    size_hint: 0.5, 0.5
-    title: "Selecione o arquivo Shapefile '*.shp'"
+<ShapefileScreen>:
+    name: 'shapefilescreen'
+    canvas.before:
+        Color:
+            rgba: (1,1,1,1)
+        Rectangle:
+            pos: 0, self.height*0.9
+            size: self.width, self.height*0.09
+        Rectangle:
+            pos: 0, self.height*0.19
+            size: self.width, self.height*0.1
+    Label:
+        text: "SELECIONE O [i]*.shp[/i] do [b]SHAPEFILE[/b]"
+        markup: True
+        size_hint: 1, 0.1
+        pos_hint: {'x':0, 'y':0.9}
+        font_size: '20sp'
+        color: 0,0,0,1
     FileChooserListView:
-        id: shapefile_chooser
-        size_hint: 1,1
+        id: filechoosershape
+        size_hint: 1, 0.6
+        pos_hint: {'x': 0, 'y': 0.3}
         filters: ['*.shp']
-        on_submit:
-            root.select_shapefile(shapefile_chooser.selection)
+        on_submit: shapePath.text = '[b]Selecionado:[/b]'+'\n'+filechoosershape.selection[0]
+    Label:
+        id: shapePath
+        size_hint: 1, 0.1
+        pos_hint: {'x': 0, 'y': 0.2}
+        color: 0,0,0,1
+        markup: True
+        text: '[b]Nada selecionado[/b]'
+    Button:
+        text: 'Selecionar'
+        size_hint: 0.2, 0.07
+        pos_hint: {'x': 0.2, 'y': 0.10}
+        on_release:
+            root.get_codes(filechoosershape.selection)
+
+    Button:
+        text: 'Voltar'
+        size_hint: 0.2, 0.07
+        pos_hint: {'x': 0.6, 'y': 0.10}
+        on_release:
+            app.root.current = 'main'
+            root.manager.transition.direction = 'down'
+    Label:
+        text: "[b]Aviso: [/b]Apos clicar no botao de 'Selecionar' aguarde o processo acabar."
+        markup: True
+        color: 1,1,1,1
+        size_hint: 1, 0.1
+        pos_hint: {'x': 0, 'y': 0}
+<BBoxScreen>:
+    name: 'bboxscreen'
+    # FloatLayout:
+    canvas.before:
+        Color:
+            rgba: (1,1,1,1)
+        Rectangle:
+            pos: 0, self.height*0.9
+            size: self.width, self.height*0.09
+        Rectangle:
+            pos: 0, self.height*0.19
+            size: self.width, self.height*0.1
+    Label:
+        text: "[b]MOVA[/b] O MAPA PARA A LATITUDE E LONGITUDE DESEJADA"
+        markup: True
+        size_hint: 1, 0.1
+        pos_hint: {'x':0, 'y':0.9}
+        font_size: '20sp'
+        color: 0,0,0,1
+
+    MapView:
+        id: mapbbox
+        lat: -10
+        lon: -50
+        zoom: 4
+        size_hint: 0.6, 0.55
+        pos_hint: {'x':0.2, 'y':0.325}
+
+    Label:
+        id: labelbbox
+        size_hint: 1, 0.1
+        pos_hint: {'x': 0, 'y': 0.2}
+        color: 0,0,0,1
+        markup: True
+        # text: 'Nada Selecionado'
+        text: f'Latitude: [{mapbbox.bbox[2]:.3f}   {mapbbox.bbox[0]:.3f}]\nLongitude:[{mapbbox.bbox[3]:.3f}   {mapbbox.bbox[1]:.3f}]'
+
+    Button:
+        text: 'Ver Lat Lon'
+        size_hint: 0.15, 0.05
+        pos_hint: {'x':0.2, 'y':0.22}
+        on_release:
+            root.get_bbox()
+    Button:
+        text: 'Confirmar'
+        size_hint: 0.2, 0.07
+        pos_hint: {'x':0.2, 'y':0.1}
+        on_release:
+            root.get_codes()
+    Button:
+        text: 'Voltar'
+        size_hint: 0.2, 0.07
+        pos_hint: {'x':0.6, 'y':0.1}
+        on_release:
+            app.root.current = 'main'
+            root.manager.transition.direction = 'up'
+    Label:
+        text: "[b]Aviso: [/b]Apos clicar no botao de 'Selecionar' aguarde o processo acabar."
+        markup: True
+        color: 1,1,1,1
+        size_hint: 1, 0.1
+        pos_hint: {'x': 0, 'y': 0}
+<DownloadScreenShp>:
+    name: 'downloadscreen_shp'
+    canvas.before:
+        Color:
+            rgba: (1,1,1,1)
+        Rectangle:
+            pos: 0, self.height*0.9
+            size: self.width, self.height*0.09
+        Rectangle:
+            pos: 0, self.height*0.19
+            size: self.width, self.height*0.1
+    Label:
+        text: "SELECIONE O DIRETORIO PARA SALVAR"
+        markup: True
+        size_hint: 1, 0.1
+        pos_hint: {'x':0, 'y':0.9}
+        font_size: '20sp'
+        color: 0,0,0,1
+
+    FileChooserListView:
+        id: filechooser_downloadshp
+        dirselect: True
+        size_hint: 1, 0.6
+        pos_hint: {'x': 0, 'y': 0.3}
+        filters: [root.selected]
+    Label:
+        id: downloadShpPath
+        size_hint: 1, 0.1
+        pos_hint: {'x': 0, 'y': 0.2}
+        color: 0,0,0,1
+        markup: True
+        text: 'Nada selecionado'
+    Button:
+        text: 'Download chuva'
+        id: downloadbtn
+        size_hint: 0.2, 0.07
+        pos_hint: {'x': 0.1, 'y': 0.10}
+
+        on_release:
+            root.download_ANA_station()
+            # root.teste()
+    Button:
+        text: 'Download vazao'
+        id: downloadbtn_vazao
+        size_hint: 0.2, 0.07
+        pos_hint: {'x': 0.4, 'y': 0.10}
+
+        on_release:
+            root.download_ANA_station_vazao()
+    Button:
+        text: 'Voltar'
+        size_hint: 0.2, 0.07
+        pos_hint: {'x': 0.7, 'y': 0.10}
+
+        on_release:
+            app.root.current = 'main'
+            root.manager.transition.direction = 'right'
+    Label:
+        text: "[b]Aviso: [/b]Nao esqueca de selecionar 'Shp' ou 'Area'."
+        markup: True
+        color: 1,1,1,1
+        size_hint: 1, 0.1
+        pos_hint: {'x': 0, 'y': 0}

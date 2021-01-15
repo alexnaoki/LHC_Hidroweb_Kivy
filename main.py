@@ -8,6 +8,7 @@ from kivy.uix.screenmanager import ScreenManager, Screen
 from kivy.uix.filechooser import FileChooserListView
 from kivy.uix.button import Button
 from kivy.base import ExceptionHandler, ExceptionManager
+from kivy.clock import mainthread
 
 from mapview import MapMarker, MapView
 from mapview.clustered_marker_layer import ClusteredMarkerLayer
@@ -23,69 +24,181 @@ import calendar
 import threading
 import csv
 import time
+import os
 
 class MainScreen(Screen):
     layer = ClusteredMarkerLayer(cluster_node_size=4,cluster_radius=200)
     popup = ObjectProperty()
+    mapa = ObjectProperty()
+    bbox = 0
 
-    def open_popup(self):
-        self.popup = CustomPopup()
-        self.popup.open()
+    def change_toInventario(self):
+        self.manager.current = 'inventario'
 
-    def show_inventario_cluster(self):
-        print(self.popup.inventario_path)
-        # self.df_inventario = pd.read_csv(self.popup.inventario_path)
-        # for i, row in self.df_inventario.iterrows():
-        self.ids['progressbar'].value = 25
+    def change_toShape(self):
+        self.manager.current = 'shapefilescreen'
 
-        with open(self.popup.inventario_path, encoding='utf8') as csvfile:
+    def change_toBbox(self):
+        self.manager.current = 'bboxscreen'
+
+    def change_toDownload_shp(self):
+        self.manager.current = 'downloadscreen_shp'
+
+    # def get_bbox(self):
+    #     bbox = self.manager.get_screen('bboxscreen').ids['mapbbox'].bbox
+    #     # self.manager.get_screen('bboxscreen').ids.labelbbox.text = str(self.manager.get_screen('main').ids['map'].bbox)
+    #     self.manager.get_screen('bboxscreen').ids.labelbbox.text = f'Latitude : [{bbox[2]:.3f}   {bbox[0]:.3f}]\nLongitude: [{bbox[3]:.3f}   {bbox[1]:.3f}]'
+    #     print(self.manager.get_screen('bboxscreen').ids['mapbbox'].bbox)
+    #     self.bbox = bbox
+
+
+    def _donwload_teste(self, req, result):
+        print('sucesso')
+        print(result)
+
+    def _download_error(self, *args):
+        print('ERRO download')
+
+    @mainthread
+    def set_screen(self):
+        self.manager.current = 'main'
+
+    def show_codes(self):
+        print(self.manager.get_screen('shapefilescreen').codes)
+
+
+class WindowManager(ScreenManager):
+    pass
+
+class InventarioScreen(Screen):
+    layer = ClusteredMarkerLayer(cluster_node_size=4,cluster_radius=200)
+    inventario_path = StringProperty('')
+
+    def teste(self):
+        mark = MapMarker(lat=50, lon=10)
+        self.manager.get_screen('main').ids['map'].add_marker(mark)
+
+    def show_inventarioCluster(self, selection, *args):
+        # print(selection)
+        # self.manager.current = 'loading'
+        # print(self.popup.inventario_path)
+        # print(filechooserscreen.selection[0])
+
+        # self.ids['progressbar'].value = 25
+        self.inventario_path = selection[0]
+        with open(self.inventario_path, encoding='utf8') as csvfile:
             data = csv.DictReader(csvfile)
             for row in data:
                 self.layer.add_marker(lat=float(row['Latitude']), lon=float(row['Longitude']))
         print('Added to layer')
-        self.ids['map'].add_widget(self.layer)
+        # self.ids['map'].add_widget(self.layer)
+        self.manager.get_screen('main').ids['map'].add_widget(self.layer)
         self.layer.reposition()
-
         print('Added Layer')
-        self.ids['progressbar'].value = 50
+        self.manager.current = 'main'
+        self.manager.transition.direction = "left"
+        # self.ids['progressbar'].value = 50
 
-    def open_popup_shp(self):
-        self.popup_shp = ShapefilePopup()
-        self.popup_shp.open()
-
-    def check_within_shp(self):
-        shp_path = self.popup_shp.shapefile_path
+class ShapefileScreen(Screen):
+    codes = []
+    def get_codes(self, selection, *args):
+        print(selection[0])
+        shp_path = selection[0]
         shp = shapefile.Reader(shp_path)
         print(shp)
-        self.codes = []
+
         all_shapes = shp.shapes()
         all_records = shp.records()
         print(all_shapes)
         print(all_records)
-
+        print(self.manager.get_screen('inventario').ids.filechooserscreen.selection[0])
         for i in range(len(all_shapes)):
             boundary = all_shapes[i]
             boundary = shape(boundary)
             print(boundary)
-            with open(self.popup.inventario_path, encoding='utf8') as csvfile:
+            with open(self.manager.get_screen('inventario').ids.filechooserscreen.selection[0], encoding='utf8') as csvfile:
                 data = csv.DictReader(csvfile)
                 for row in data:
                     if Point((float(row['Longitude']), float(row['Latitude']))).within(boundary):
                         print('Dentro')
                         print(float(row['Latitude']), float(row['Longitude']), int(row['Codigo']))
                         mark = MapMarker(lat=float(row['Latitude']), lon=float(row['Longitude']))
-                        self.ids['map'].add_marker(mark)
+                        self.manager.get_screen('main').ids['map'].add_marker(mark)
                         self.codes.append(int(row['Codigo']))
                     else:
                         pass
         print(self.codes)
+        self.manager.current = 'main'
+        self.manager.transition.direction = "down"
+
+class BBoxScreen(Screen):
+    codes = []
+
+    def get_bbox(self):
+        bbox = self.manager.get_screen('bboxscreen').ids['mapbbox'].bbox
+        # self.manager.get_screen('bboxscreen').ids.labelbbox.text = str(self.manager.get_screen('main').ids['map'].bbox)
+        self.manager.get_screen('bboxscreen').ids.labelbbox.text = f'Latitude : [{bbox[2]:.3f}   {bbox[0]:.3f}]\nLongitude: [{bbox[3]:.3f}   {bbox[1]:.3f}]'
+        print(self.manager.get_screen('bboxscreen').ids['mapbbox'].bbox)
+        self.bbox = bbox
+    def get_codes(self):
+        # bbox = self.manager.get_screen('main').bbox
+        bbox = self.manager.get_screen('bboxscreen').ids['mapbbox'].bbox
+        print(bbox)
+        inventario_path = self.manager.get_screen('inventario').ids.filechooserscreen.selection[0]
+        print(inventario_path)
+        with open(inventario_path, encoding='utf8') as csvfile:
+            data = csv.DictReader(csvfile)
+            for row in data:
+                if (float(row['Longitude'])>bbox[1]) and (float(row['Longitude'])<bbox[3]) and (float(row['Latitude'])>bbox[0]) and (float(row['Latitude'])<bbox[2]):
+                    print(row['Longitude'], row['Latitude'], row['Codigo'])
+                    mark = MapMarker(lat=float(row['Latitude']), lon=float(row['Longitude']))
+                    self.manager.get_screen('main').ids['map'].add_marker(mark)
+                    self.codes.append(int(row['Codigo']))
+                else:
+                    pass
+        print(len(self.codes))
+        self.manager.current = 'main'
+        self.manager.transition.direction = 'up'
+
+class DownloadScreenShp(Screen):
+    def selected(self, directory, filename):
+        self.ids.downloadShpPath.text = os.path.dirname(filename)
+
+    def teste(self):
+        print(self.manager.get_screen('main').ids.toggle1.state)
+
 
     def download_ANA_station(self):
-        typeData=2
-        list_codes = self.codes
+        folder_name = 'dados_LHC_hidroweb'
+        b = 2
+        self.save_folder = os.path.join(self.ids.downloadShpPath.text, folder_name)
+        if not os.path.exists(self.save_folder):
+            print('nao existe, criando pasta')
+            os.mkdir(self.save_folder)
+        elif os.path.exists(self.save_folder):
+            print('existe')
+
+        print(self.manager.get_screen('main').ids.toggle1.state)
+        print(self.manager.get_screen('main').ids.toggle2.state)
+
+        if self.manager.get_screen('main').ids.toggle1.state == 'down':
+            list_codes = self.manager.get_screen('shapefilescreen').codes
+        if self.manager.get_screen('main').ids.toggle2.state == 'down':
+            print('toggle2 down')
+            list_codes = self.manager.get_screen('bboxscreen').codes
+            print(list_codes)
+
+        # if self.manager.get_screen('downloadscreen_shp').ids.togglechuva == 'down':
+        #     b = 2
+        # if self.manager.get_screen('downloadscreen_shp').ids.togglevazao == 'down':
+        #     b = 3
+        # else:
+        #     b = 3
+        #     print('erro')
+        #     list_codes = []
         for station in list_codes:
             api = 'http://telemetriaws1.ana.gov.br/ServiceANA.asmx/HidroSerieHistorica'
-            self.params = {'codEstacao': station, 'dataInicio': '', 'dataFim': '', 'tipoDados': '{}'.format(typeData), 'nivelConsistencia': ''}
+            self.params = {'codEstacao': station, 'dataInicio': '', 'dataFim': '', 'tipoDados': '{}'.format(b), 'nivelConsistencia': ''}
             url_req = PreparedRequest()
             url_req.prepare_url(api, self.params)
             self.req = UrlRequest(
@@ -98,15 +211,15 @@ class MainScreen(Screen):
             # print(self.req)
             # self.req.wait()
             print(station)
+
     def _donwload_teste(self, req, result):
         print('sucesso')
         print(result)
 
     def _download_sucess(self, req, result):
         try:
-            # print(self.req.result)
+            # print(req)
             tree = ET.ElementTree(ET.fromstring(result))
-            # print(tree)
             root = tree.getroot()
 
             list_data = []
@@ -121,8 +234,9 @@ class MainScreen(Screen):
                 month_dates = [date + datetime.timedelta(days=i) for i in range(last_day)]
                 data = []
                 list_consistencia = []
+                print(self.params['tipoDados'])
                 for day in range(last_day):
-                    # if params['tipoDados'] == '3':
+                    # if self.params['tipoDados'] == '3':
                     #     value = 'Vazao{:02}'.format(day+1)
                     #     try:
                     #         data.append(float(i.find(value).text))
@@ -147,17 +261,17 @@ class MainScreen(Screen):
                 list_data = list_data + data
                 list_consistenciaF = list_consistenciaF + list_consistencia
                 list_month_dates = list_month_dates + month_dates
-            typeData = 2
+            # typeData = 2
             print(list_data)
-            print(list_month_dates)
-            print(list_consistenciaF)
+            # print(list_month_dates)
+            # print(list_consistenciaF)
             if len(list_data) > 0:
-                # df = pd.DataFrame({'Date': list_month_dates, 'Consistence_{}_{}'.format(typeData,codigo): list_consistenciaF, 'Data{}_{}'.format(typeData, codigo): list_data})
-                # print(df.to_csv(f'{codigo}_teste.csv'))
+                # print(typedata)
+                typedata = self.params['tipoDados']
                 rows = zip(list_month_dates, list_consistenciaF, list_data)
-                with open(f'{codigo}_teste_sempandas.csv', 'w', newline='') as f:
+                with open(os.path.join(self.save_folder,f'{typedata}_{codigo}.csv'), 'w', newline='') as f:
                     writer = csv.writer(f)
-                    writer.writerow(('Date', f'Consistence_{typeData}_{codigo}', f'Data_{codigo}'))
+                    writer.writerow(('Date', f'Consistence_{typedata}_{codigo}', f'Data_{typedata}_{codigo}'))
                     for row in rows:
                         writer.writerow(row)
         except:
@@ -166,45 +280,105 @@ class MainScreen(Screen):
     def _download_error(self, *args):
         print('ERRO download')
 
+    def download_ANA_station_vazao(self):
+        folder_name = 'dados_LHC_hidroweb'
+        b = 3
+        self.save_folder = os.path.join(self.ids.downloadShpPath.text, folder_name)
+        if not os.path.exists(self.save_folder):
+            print('nao existe, criando pasta')
+            os.mkdir(self.save_folder)
+        elif os.path.exists(self.save_folder):
+            print('existe')
+
+        print(self.manager.get_screen('main').ids.toggle1.state)
+        print(self.manager.get_screen('main').ids.toggle2.state)
+
+        if self.manager.get_screen('main').ids.toggle1.state == 'down':
+            list_codes = self.manager.get_screen('shapefilescreen').codes
+        if self.manager.get_screen('main').ids.toggle2.state == 'down':
+            print('toggle2 down')
+            list_codes = self.manager.get_screen('bboxscreen').codes
+            print(list_codes)
+
+        # if self.manager.get_screen('downloadscreen_shp').ids.togglechuva == 'down':
+        #     b = 2
+        # if self.manager.get_screen('downloadscreen_shp').ids.togglevazao == 'down':
+        #     b = 3
+        # else:
+        #     b = 3
+        #     print('erro')
+        #     list_codes = []
+        for station in list_codes:
+            api = 'http://telemetriaws1.ana.gov.br/ServiceANA.asmx/HidroSerieHistorica'
+            self.params = {'codEstacao': station, 'dataInicio': '', 'dataFim': '', 'tipoDados': '{}'.format(b), 'nivelConsistencia': ''}
+            url_req = PreparedRequest()
+            url_req.prepare_url(api, self.params)
+            self.req = UrlRequest(
+                            url_req.url,
+                            on_success=self._download_sucess_vazao,
+                            # on_success=self._donwload_teste,
+                            on_error=self._download_error,
+                            on_failure=self._download_error
+                             )
+            # print(self.req)
+            # self.req.wait()
+            print(station)
 
 
-class CustomPopup(Popup):
-    def select_inventario(self, selection, *args):
+    def _download_sucess_vazao(self, req, result):
         try:
-            self.inventario_path = selection[0]
-            print(self.inventario_path)
-            print('Selecionado Inventario')
-        except:
-            print('erro popup')
+            tree = ET.ElementTree(ET.fromstring(result))
+            root = tree.getroot()
 
-class ShapefilePopup(Popup):
-    def select_shapefile(self, selection, *args):
-        try:
-            self.shapefile_path = selection[0]
-            print(self.shapefile_path)
-            print('Selecionado Shapefile')
-        except:
-            print('erro popup shapefile')
+            list_data = []
+            list_consistenciaF = []
+            list_month_dates = []
+            for i in root.iter('SerieHistorica'):
+                codigo = i.find("EstacaoCodigo").text
+                consistencia = i.find("NivelConsistencia").text
+                date = i.find("DataHora").text
+                date = datetime.datetime.strptime(date, '%Y-%m-%d %H:%M:%S')
+                last_day = calendar.monthrange(date.year, date.month)[1]
+                month_dates = [date + datetime.timedelta(days=i) for i in range(last_day)]
+                data = []
+                list_consistencia = []
+                print(self.params['tipoDados'])
+                for day in range(last_day):
+                    if self.params['tipoDados'] == '3':
+                        value = 'Vazao{:02}'.format(day+1)
+                        try:
+                            data.append(float(i.find(value).text))
+                            list_consistencia.append(int(consistencia))
+                        except TypeError:
+                            data.append(i.find(value).text)
+                            list_consistencia.append(int(consistencia))
+                        except AttributeError:
+                            data.append(None)
+                            list_consistencia.append(int(consistencia))
 
-class WindowManager(ScreenManager):
-    pass
+                list_data = list_data + data
+                list_consistenciaF = list_consistenciaF + list_consistencia
+                list_month_dates = list_month_dates + month_dates
+            # typeData = 2
+            print(list_data)
+            # print(list_month_dates)
+            # print(list_consistenciaF)
+            if len(list_data) > 0:
+                # print(typedata)
+                typedata = self.params['tipoDados']
+                rows = zip(list_month_dates, list_consistenciaF, list_data)
+                with open(os.path.join(self.save_folder,f'{typedata}_{codigo}.csv'), 'w', newline='') as f:
+                    writer = csv.writer(f)
+                    writer.writerow(('Date', f'Consistence_{typedata}_{codigo}', f'Data_{typedata}_{codigo}'))
+                    for row in rows:
+                        writer.writerow(row)
+        except:
+            print('ERRO')
+
+
 
 class RootApp(App):
     def build(self):
         return Builder.load_file('main.kv')
 
-
-# class E(ExceptionHandler):
-#     def handle_exception(self, inst):
-#         app = App.get_running_app()
-#         if app.scheduled_switch is not None:
-#             app.scheduled_switch.cancel()  # cancel the scheduled switch
-#             app.scheduled_switch = None
-#         if app.Exception_counter == 0:
-#             popup = MsgPopup(inst)
-#             popup.open()
-#         app.Exception_counter += 1
-#         return ExceptionManager.PASS
-#
-# ExceptionManager.add_handler(E())
 RootApp().run()
